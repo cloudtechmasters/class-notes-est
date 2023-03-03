@@ -1,0 +1,81 @@
+feb 17 class notes
+#######################
+we are going to dicuss abt java app connecting to db 
+
+AWS Services
+#################
+
+RDS where our db will be running
+Secrets manager where our db username and password will be present
+Ec2 where our java app will be running connecting to db
+IAM service as well
+
+
+
+postgres
+UlKrishna#436
+
+dev/AppBeta/postgres
+prod/AppBeta/postgres
+
+our application will be running in ec2 instance and we want to connect to Secrets maanger to get DB username and password
+
+ec2 instance
+IAM role for secrets manager
+
+aws secretsmanager get-secret-value \
+    --secret-id dev/AppBeta/postgres
+	
+	
+string="$(aws ssm get-parameter --name "/Test/private-ip" --query "Parameter.Value" --output text --region $REGION)"
+array=(`echo $string | sed 's/,/\n/g'`)
+server1_private="$${array[0]}"
+server2_private="$${array[1]}"
+server3_private="$${array[2]}"
+
+
+################################
+sometimes info may not be sensitive
+
+aws ssm get-parameter --name username --query "Parameter.Value"
+
+
+aws secretsmanager get-secret-value --secret-id prod/App1/Mysql | jq '.SecretString' | sed -e 's/\\//g' -e 's/^"//g' -e 's/"$//g' |jq '.' <br />
+
+
+aws secretsmanager get-secret-value --secret-id username | jq '.SecretString' | sed -e 's/\\//g' -e 's/^"//g' -e 's/"$//g' |jq '.' 
+aws secretsmanager get-secret-value --secret-id dev/AppBeta/postgres | jq '.SecretString' | sed -e 's/\\//g' -e 's/^"//g' -e 's/"$//g' |jq '.' 
+dev/AppBeta/postgres
+
+
+database-1.cakf4kntpt6x.us-east-1.rds.amazonaws.com
+
+export POSTGRES_HOST="database-1.cakf4kntpt6x.us-east-1.rds.amazonaws.com"
+
+
+aws rds describe-db-instances \
+    --db-instance-identifier database-1
+	
+	
+[ec2-user@ip-172-31-31-197 ~]$ aws rds describe-db-instances     --db-instance-identifier database-1 | jq '.DBInstances[0].Endpoint.Address'
+"database-1.cakf4kntpt6x.us-east-1.rds.amazonaws.com"
+
+export POSTGRES_HOST=$(aws rds describe-db-instances     --db-instance-identifier database-1 | jq '.DBInstances[0].Endpoint.Address')
+
+
+ec2 is running in us-east-1b and RDS is running in us-east-1a
+we need to add us-east-1b subnet id in RDS security group
+
+copy subnet id cidr bloock
+
+172.31.16.0/20
+
+
+host="${host:1}"
+
+
+echo $host | sed 's/.$//'
+
+export POSTGRES_HOST=$( aws rds describe-db-instances     --db-instance-identifier database-1 | jq '.DBInstances[0].Endpoint.Address')
+POSTGRES_HOST="${POSTGRES_HOST:1}"
+POSTGRES_HOST=$(echo $POSTGRES_HOST | sed 's/.$//')

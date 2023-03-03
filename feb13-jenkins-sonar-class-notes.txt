@@ -1,0 +1,136 @@
+Feb13 class notes
+###########################
+how to integrate sonarqube with jenkins pipeline
+#######################################################
+we will need 2 servers
+
+server-1 is where jenkins will be running
+1.git
+2.java 17
+3.maven
+4.sonar scanner
+5.jenkins
+
+
+server-2
+#################
+java 17
+sonarqube latest version
+
+squ_c1c8088d2f2a73298e31cb6ef549b43e768f991a
+
+###############
+1.store sonar token in jenkins credentials section
+2.install sonarqube scanner plugin from manage plugins
+3.mention sonarqube server details in configure system
+and mention sonarqube scanner details in gloal tool configuraiton
+ tools{
+        maven 'maven-3.9.0'
+		sonar-scanner 'sonar-scanner-4.8.0.2856'
+    }
+	
+	
+stage("Deploy to Sonar") {
+            steps{
+                withSonarQubeEnv(installationName: 'sonarqube-9.9.0.65466', credentialsId: 'jenkins-sonar-token') {
+                    sh "sonar-scanner"
+                }
+            }
+        }
+		
+stage("Deploy to Sonar") {
+            steps{
+                withSonarQubeEnv(installationName: 'sonarqube-9.9.0.65466') {
+                    sh "sonar-scanner"
+                }
+            }
+        }
+		
+		
+stage("Deploy to Sonar") {
+            steps{
+                withSonarQubeEnv(installationName: 'sonarqube-9.9.0.65466', credentialsId: 'jenkins-sonar-token') {
+                    sh "${ tool ("sonar-scanner-4.8.0.2856")}/sonar-scanner"
+                }
+            }
+        }
+		
+		
+we want to get the response back from sonarqube saying project is good or bad
+for that we need to use a concept called webhooks
+we need to cteate webhook in sonarqube with jenkins url
+
+http://54.159.225.242:8080/sonarqube-webhook/
+
+#########final working one##########
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.9.0'
+    }
+    stages{
+        stage('git checkout'){
+            steps{
+               git branch: 'master', url: 'https://github.com/cloudtechmasters/springboot-maven-course-micro-svc.git' 
+            }
+        }
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage("Deploy to Sonar") {
+            steps{
+                withSonarQubeEnv(installationName: 'sonarqube-9.9.0.65466') {
+                    sh "${ tool ("sonar-scanner-4.8.0.2856")}/sonar-scanner"
+                }
+            }
+        }
+        stage("Quality Gate") {
+            steps {
+              timeout(time: 1, unit: 'HOURS') {
+                waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+    }
+}
+
+
+############################
+
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.9.0'
+    }
+    stages{
+        stage('git checkout'){
+            steps{
+               git branch: 'master', url: 'https://github.com/cloudtechmasters/springboot-maven-course-micro-svc.git' 
+            }
+        }
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage("Deploy to Sonar") {
+            steps{
+                script{
+                    withSonarQubeEnv(installationName: 'sonarqube-9.9.0.65466', credentialsId: 'jenkins-sonar-token') {
+                    sh "${ tool ("sonar-scanner-4.8.0.2856")}/sonar-scanner"
+                }
+
+                    timeout(time: 1, unit: 'HOURS') {
+                      def qg = waitForQualityGate()
+                      if (qg.status != 'OK') {
+                           error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                      }
+                    }
+
+                }  
+            }
+        }
+    }
+}

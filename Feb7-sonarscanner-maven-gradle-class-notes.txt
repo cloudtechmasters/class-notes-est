@@ -1,0 +1,84 @@
+Feb 7 class notes
+####################
+sonarqube-9.9.0.65466
+
+latest sonarqube version needs java 17 not java 11
+
+[ec2-user@ip-172-31-85-133 sonarqube-9.9.0.65466]$ sudo alternatives --config java
+
+There are 2 programs which provide 'java'.
+
+  Selection    Command
+-----------------------------------------------
+   1           /usr/lib/jvm/java-11-amazon-corretto.x86_64/bin/java
+*+ 2           /usr/lib/jvm/java-17-amazon-corretto.x86_64/bin/java
+
+Enter to keep the current selection[+], or type selection number: 2
+
+
+sonar scanner on Build Server needs token from sonarqube server to do the scanning for a given project
+
+sonar token
+#############
+squ_4ec156226f9847a7f8a10aa9999174cec1bf0b8a
+
+
+Run the following command from the project base directory to launch analysis and pass your authentication token:
+
+
+/home/ec2-user/sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner -Dsonar.host.url="http://44.202.38.253:9000" -Dsonar.login=squ_4ec156226f9847a7f8a10aa9999174cec1bf0b8a
+
+export PATH=$PATH:/home/ec2-user/sonar-scanner-4.8.0.2856-linux/bin/
+sonar-scanner -Dsonar.host.url="http://44.202.38.253:9000" -Dsonar.login=squ_4ec156226f9847a7f8a10aa9999174cec1bf0b8a
+
+ERROR: Error during SonarScanner execution
+org.sonar.java.AnalysisException: Your project contains .java files, please provide compiled classes with sonar.java.binaries property, or exclude them from the analysis with sonar.exclusions property.
+
+sonar-scanner -Dsonar.host.url="http://44.202.38.253:9000" -Dsonar.login=squ_4ec156226f9847a7f8a10aa9999174cec1bf0b8a -Dsonar.java.binaries=target/classes
+
+https://github.com/cloudtechmasters/nov13-gradle-demo.git
+
+
+################################
+maven will be used for small projects and gradle will be used for large projects
+
+in maven we use mvn clean package
+in gradle we use gradle clean build
+
+in maven compiled classes will be presents in target/classes
+in gradle compiled classes woll be present in build/libs
+
+sonar-scanner -Dsonar.host.url="http://44.202.38.253:9000" -Dsonar.login=squ_4ec156226f9847a7f8a10aa9999174cec1bf0b8a 
+
+
+http://${SONAR_HOST}/api/qualitygates/project_status?projectKey=${PROJECT_KEY}
+http://44.202.38.253:9000/api/qualitygates/project_status?projectKey=nov13-gradle-demo
+
+ANYTOKENNAME=squ_4ec156226f9847a7f8a10aa9999174cec1bf0b8a
+curl -u username:password url
+curl -u $ANYTOKENNAME: http://44.202.38.253:9000/api/qualitygates/project_status?projectKey=nov13-gradle-demo
+
+sudo yum install jq -y
+[ec2-user@ip-172-31-91-194 nov13-gradle-demo]$ curl -u $ANYTOKENNAME: http://44.202.38.253:9000/api/qualitygates/project_status?projectKey=nov13-gradle-demo | jq '.projectStatus.status'
+
+failure case
+####################
+if developer writes a bad standard code sonar will scan this and find this bad code and fail the sonar project status
+
+
+Python way to check sonar project status is ok or error
+##############################################################
+
+# import requests module
+import requests
+from requests.auth import HTTPBasicAuth
+  
+# Making a get request
+response = requests.get('http://44.202.38.253:9000/api/qualitygates/project_status?projectKey=nov13-gradle-demo',auth=HTTPBasicAuth('squ_4ec156226f9847a7f8a10aa9999174cec1bf0b8a', ''))
+  
+# print request object
+print(response)
+# print json content
+print(response.json())
+print(response.json()['projectStatus']['status'])
+
