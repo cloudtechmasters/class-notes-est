@@ -1,0 +1,129 @@
+understand linux commands
+##############################
+to test your knowledge try to install all the devops tools
+
+
+1.git
+2.java
+3.maven/gradle
+4.sonarqube without db or with db 
+5.nexus/jfrog
+6.docker
+7.jenkins
+8.ansible
+9.k8s
+
+10.logging ELK
+11.monitrogin
+promethues and grafana
+
+
+IAAC
+##############
+Terraform
+
+Automation
+#############
+Shell scripting 
+python scripting
+CI
+##########################
+1.checkout the code
+2.build the code
+3.check the quality of the code
+4.upload the build artifacts like jar/war to nexus
+
+
+
+CD
+#####################
+use ansible playbook to download jar or war file from nexus
+and deploy it on to the server
+###############################
+
+
+Agenda
+###################
+how to integrate sonarqube with postgres
+#######################################
+before running sonarqube server make sure database server is running
+
+u can run database server and sonarqube servwr on same machine or else
+if you want ucan keep both of them in different machine
+
+#####################
+create amazon linux2
+#############################
+
+along with database java also should  be there before running sonarqube server
+##########################################################################
+
+
+postgresql 14
+postgresql 13
+pistgresql 12
+#############################################
+install postgresql 14on amazon linux2
+https://techviewleo.com/how-to-install-postgresql-database-on-amazon-linux/
+
+sudo systemctl enable --now postgresql-14
+sudo systemctl start postgresql-14
+
+we need to connect to the database and then we need to set password for the default user postgres
+
+to connect to the database switch to postgres user
+
+
+Postgres DB details
+#####################
+username: postgres
+password: postgres
+databasename: postgres
+
+port number: 5432
+###########################
+
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.0.65466.zip
+
+sonar.jdbc.username=postgres
+sonar.jdbc.password=postgres
+sonar.jdbc.url=jdbc:postgresql://localhost/postgres
+sonar.jdbc.url=jdbc:postgresql://localhost:5432/postgres
+
+[1] bootstrap checks failed. You must address the points described in the following [1] lines before starting Elasticsearch.
+bootstrap check failure [1] of [1]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+
+
+sudo sysctl vm.max_map_count=262144
+
+if you dont want to run DB on EC2 instance we can use AWS RDS 
+
+RDS means relational database service
+and RDS postgres engine we can crete and use it where ever needed
+
+UlKrishna#436
+
+in order to allow connections from EC2 to RDS
+add ec2 az cidr block 172.31.16.0/20	 to RDS security group
+
+
+psql -h database-1.cakf4kntpt6x.us-east-1.rds.amazonaws.com -U postgres -W postgres
+
+RDS DB DETAILS
+##################
+sonar.jdbc.username=postgres
+sonar.jdbc.password=UlKrishna#436
+sonar.jdbc.url=jdbc:postgresql://database-1.cakf4kntpt6x.us-east-1.rds.amazonaws.com:5432/postgres
+
+1.how to connect to db psql -h database-1.cakf4kntpt6x.us-east-1.rds.amazonaws.com -U postgres -W postgres
+2.how to peform 
+create
+insert
+update
+delete
+
+CURD or CRUD operations
+
+3.how to do backup and restore
+4.how to find slow running queries?
+
